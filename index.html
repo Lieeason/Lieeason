@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111111">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fashion Prompt Studio">
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>Fashion Prompt Studio｜AI 模特提示詞生成器</title>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --panel-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #e2e8f0;
+            --danger-color: #ef4444;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .sub-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-danger { background: #fee2e2; color: var(--danger-color); }
+        .btn-danger:hover { background: #fca5a5; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-secondary:hover { background: #e2e8f0; }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .custom-item-bar {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .dynamic-accessory-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preview-sidebar {
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .prompt-preview {
+            flex: 1;
+            width: 100%;
+            margin: 16px 0;
+            padding: 12px;
+            background: #1e293b;
+            color: #f8fafc;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            resize: none;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .counter-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .counter-container input {
+            width: 50px;
+            text-align: center;
+        }
+
+        .fixed-module{border:1px solid var(--border-color);background:linear-gradient(180deg,#fff,#f8fafc);border-radius:8px;padding:14px}.fixed-module-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.module-meta{font-size:.75rem;color:var(--text-muted);margin-top:2px}.module-toggle{display:inline-flex;align-items:center;gap:7px;font-size:.82rem;font-weight:600;color:#334155;cursor:pointer;white-space:nowrap}.module-toggle input{width:16px;height:16px}.tag-list{display:flex;flex-wrap:wrap;gap:8px}.tag-item{position:relative}.tag-item label{margin:0}.tag-item.custom::after{content:'自訂';position:absolute;top:-7px;right:-4px;font-size:9px;line-height:1;padding:3px 4px;border-radius:8px;background:#dbeafe;color:#1d4ed8}.preview-extra{border:1px solid #334155;background:#0f172a;color:#e2e8f0;border-radius:6px;padding:10px 12px;font-size:.78rem;line-height:1.55;margin-bottom:10px}.preview-extra strong{color:#fff}.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;padding:4px 8px;border-radius:999px;background:#dcfce7;color:#166534}.status-badge.off{background:#e2e8f0;color:#475569}.delete-info{font-size:.72rem;color:var(--text-muted);margin-top:8px}@media(max-width:700px){.fixed-module-head{align-items:flex-start;flex-direction:column}}
+
+        /* Website presentation layer */
+        :root {
+            --bg-main: #f5f5f3;
+            --panel-bg: #ffffff;
+            --text-main: #171717;
+            --text-muted: #737373;
+            --accent-color: #111111;
+            --accent-hover: #333333;
+            --border-color: #dededb;
+            --danger-color: #b42318;
+            --radius: 12px;
+        }
+        body {
+            padding: 0;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(0,0,0,.035), transparent 30%),
+                #f5f5f3;
+        }
+        .site-shell { min-height: 100vh; }
+        .site-nav {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid #e5e5e2;
+        }
+        .nav-inner {
+            max-width: 1440px; margin: 0 auto; padding: 16px 28px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
+        }
+        .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.02em; }
+        .brand-mark {
+            width:34px;height:34px;border-radius:9px;background:#111;color:#fff;
+            display:grid;place-items:center;font-size:13px;
+        }
+        .nav-links { display:flex; gap:22px; color:#525252; font-size:.86rem; }
+        .nav-links a { color:inherit; text-decoration:none; }
+        .nav-actions { display:flex; gap:8px; }
+        .nav-btn {
+            border:1px solid #d4d4d1; background:#fff; color:#222;
+            padding:8px 12px; border-radius:8px; cursor:pointer; font-size:.82rem;
+        }
+        .hero {
+            max-width: 1440px; margin: 0 auto; padding: 58px 28px 34px;
+            display:grid; grid-template-columns: 1.35fr .65fr; gap:40px; align-items:end;
+        }
+        .eyebrow { font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:#737373; margin-bottom:12px; }
+        .hero h1 { font-size:clamp(2.1rem,5vw,4.8rem); line-height:.98; letter-spacing:-.055em; margin:0 0 18px; max-width:850px; }
+        .hero p { max-width:720px; color:#666; font-size:1rem; }
+        .hero-meta { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        .hero-stat { background:#fff; border:1px solid #dededb; border-radius:12px; padding:15px; }
+        .hero-stat strong { display:block; font-size:1.05rem; margin-bottom:4px; }
+        .hero-stat span { color:#777; font-size:.75rem; }
+        .container {
+            max-width:1440px; padding:0 28px 60px; margin:0 auto;
+            grid-template-columns:minmax(0,1fr) 440px; gap:24px;
+        }
+        .header { display:none; }
+        .card { border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,.035); }
+        .card-title { border-left:0; border-bottom:1px solid #ededeb; padding:0 0 13px; margin-bottom:18px; font-size:1rem; }
+        .preview-sidebar { top:78px; height:calc(100vh - 98px); }
+        .preview-card { border-radius:14px; }
+        .prompt-preview { background:#181818; border-radius:10px; }
+        .site-footer { border-top:1px solid #dededb; background:#fff; }
+        .footer-inner { max-width:1440px; margin:0 auto; padding:24px 28px; display:flex; justify-content:space-between; color:#777; font-size:.75rem; }
+        .website-toast {
+            position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px);
+            background:#111;color:#fff;padding:10px 16px;border-radius:999px;
+            font-size:.8rem;opacity:0;pointer-events:none;transition:.2s;z-index:100;
+        }
+        .website-toast.show { opacity:1; transform:translate(-50%,0); }
+        @media(max-width:1024px){
+            .hero { grid-template-columns:1fr; }
+            .hero-meta { max-width:700px; }
+            .container { grid-template-columns:1fr; }
+            .preview-sidebar { position:relative; top:auto; height:620px; }
+        }
+        @media(max-width:700px){
+            .nav-inner,.hero,.container,.footer-inner { padding-left:16px; padding-right:16px; }
+            .nav-links { display:none; }
+            .hero { padding-top:38px; }
+            .hero-meta { grid-template-columns:1fr; }
+        }
+
+    
+/* ===== Fashion Prompt Studio — Mobile Web UI ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;background:#f4f4f1}
+body{margin:0;padding:0!important;background:#f4f4f1;color:#161616;overflow-x:hidden}
+button,input,select,textarea{font:inherit}
+input,select,textarea{font-size:16px!important}
+button{touch-action:manipulation}
+.site-nav{position:sticky!important;top:0;z-index:100;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-bottom:1px solid #e5e5e2}
+.nav-inner{max-width:1180px;margin:auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{min-width:0}.brand span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-links{display:none}.nav-actions{display:flex}
+.nav-btn{min-height:42px;border-radius:9px;padding:9px 12px}
+.hero{max-width:1180px;margin:auto;padding:34px 16px 22px;display:block}
+.hero .eyebrow{font-size:.68rem;letter-spacing:.13em}
+.hero h1{font-size:clamp(2.25rem,11vw,3.8rem);line-height:.98;letter-spacing:-.055em;margin:0 0 16px}
+.hero p{font-size:.9rem;line-height:1.7;color:#666}
+.hero-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:22px}
+.hero-stat{padding:12px 10px;border-radius:10px}
+.hero-stat strong{font-size:.95rem}.hero-stat span{font-size:.68rem}
+.container{display:block!important;width:100%;max-width:1180px;margin:auto;padding:0 12px 100px!important}
+.form-container{min-width:0}
+.card{border-radius:12px;padding:15px!important;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.035)}
+.card-title{font-size:.95rem;padding-bottom:11px;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr!important;gap:11px}
+.form-group,.form-group.full-width{grid-column:auto!important;min-width:0}
+label{font-size:.82rem}
+input[type=text],select,textarea{min-height:44px;border-radius:9px;padding:9px 11px}
+textarea{resize:vertical}
+.custom-item-bar{display:flex;flex-direction:column;gap:7px;margin-top:11px;padding-top:11px}
+.custom-item-bar input,.custom-item-bar button{width:100%;min-height:42px}
+.btn{min-height:42px;border-radius:9px}
+.checkbox-group{gap:7px}
+.checkbox-label{padding:9px 10px;border-radius:10px;font-size:.82rem}
+.dynamic-accessory-box{grid-template-columns:1fr!important;padding:10px}
+.dynamic-accessory-box input{min-height:42px}
+.fixed-module{padding:12px;border-radius:10px}
+.fixed-module-head{align-items:flex-start}
+.tag-list{gap:6px}
+.preview-sidebar{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;width:100%;height:auto!important;z-index:90;pointer-events:none}
+.preview-card{pointer-events:auto;border:0;border-top:1px solid #d9d9d6;border-radius:18px 18px 0 0;padding:10px 12px 12px!important;box-shadow:0 -8px 30px rgba(0,0,0,.10);max-height:78vh;overflow:auto}
+.preview-card>.card-title{margin-bottom:8px}
+.preview-card .form-group{margin-bottom:8px!important}
+.preview-card #customNote{display:none}
+.preview-extra{margin:6px 0 8px;font-size:.7rem;padding:8px 10px}
+.prompt-preview{height:110px;min-height:110px;margin:7px 0 8px;border-radius:9px;font-size:.76rem;line-height:1.5}
+.action-buttons{grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+.action-buttons .btn{font-size:.72rem;padding:7px 4px;min-height:42px}
+.site-footer{display:none}
+#mobileHelp{display:none!important}
+@media(min-width:701px){
+  .site-nav{position:sticky!important}
+  .hero{display:grid;grid-template-columns:1.35fr .65fr}
+  .container{display:grid!important;grid-template-columns:minmax(0,1fr) 440px!important}
+  .preview-sidebar{position:sticky!important;top:78px;height:calc(100vh - 98px)!important;pointer-events:auto}
+  .preview-card{max-height:none;border:1px solid var(--border-color);border-radius:14px}
+  .preview-card #customNote{display:block}
+}
+
+
+@media(max-width:700px){
+html,body{width:100%;overflow-x:hidden!important}
+body{font-size:15px}
+.nav-inner{padding:10px 14px!important;min-width:0}
+.brand{max-width:58%;min-width:0}.brand span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero{padding:28px 16px 20px!important;width:100%}
+.hero h1{font-size:2.05rem!important;line-height:1.08!important;max-width:100%;overflow-wrap:anywhere}
+.hero p{font-size:.9rem;line-height:1.7}
+.hero-meta{grid-template-columns:1fr!important;gap:7px}
+.hero-stat{display:flex;justify-content:space-between;padding:10px 12px}
+.container{display:block!important;width:100%!important;padding:0 10px 120px!important}
+.card{width:100%;padding:13px!important;margin-bottom:10px;min-width:0!important}
+.form-grid{display:block!important;width:100%}
+.form-group{display:block!important;width:100%!important;margin-bottom:13px;min-width:0!important}
+label{display:block;width:100%;margin-bottom:6px}
+input[type=text],input[type=number],input[type=url],select,textarea{display:block;width:100%!important;max-width:100%!important;min-height:44px;padding:10px!important}
+textarea{min-height:100px}
+.checkbox-group{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%;gap:7px!important}
+.checkbox-label{width:100%;min-width:0;min-height:42px;padding:9px!important;overflow-wrap:anywhere}
+.custom-item-bar{display:grid!important;grid-template-columns:1fr!important;width:100%;gap:7px!important}
+.custom-item-bar>*{width:100%!important;min-width:0}
+.dynamic-accessory-box{display:block!important;width:100%;overflow:hidden}
+.dynamic-accessory-box>*{width:100%!important;max-width:100%!important;min-width:0!important;margin-bottom:7px}
+.fixed-module{width:100%;overflow:hidden}
+.tag-list{display:flex;flex-wrap:wrap;width:100%;gap:6px}
+.preview-sidebar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:auto!important;z-index:100!important}
+.preview-card{width:100%!important;max-height:50vh!important;overflow-y:auto!important;padding:12px 13px 78px!important;border-radius:18px 18px 0 0!important}
+.prompt-preview{width:100%!important;height:120px!important;min-height:120px!important;overflow:auto!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word!important;font-size:.77rem!important;line-height:1.55!important}
+.action-buttons{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;width:100%;gap:6px!important}
+.action-buttons .btn{width:100%!important;min-width:0!important;min-height:42px;padding:7px 3px!important;font-size:.7rem!important;white-space:normal!important}
+}
+@media(max-width:380px){
+.hero h1{font-size:1.8rem!important}
+.checkbox-group{grid-template-columns:1fr!important}
+.action-buttons{grid-template-columns:1fr!important}
+}
+
+</style>
+</head>
+<body>
+<div class="site-shell">
+    <nav class="site-nav">
+        <div class="nav-inner">
+            <div class="brand"><span class="brand-mark">FP</span><span>Fashion Prompt Studio</span></div>
+            <div class="nav-links">
+                <a href="#generator">Generator</a>
+                <a href="#preview">Prompt Preview</a>
+                <a href="#about">About</a>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-btn" onclick="scrollToPreview()">預覽 Prompt</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div>
+            <div class="eyebrow">Fashion / Model / Image Prompt</div>
+            <h1>把服裝設定，整理成可直接使用的 AI 影像 Prompt。</h1>
+            <p>Fashion Prompt Studio 專注於時尚模特兒影像生成。你可以設定人物、服裝、配件、棚拍、動作、鏡位與攝影質感，右側會即時整理成完整 Prompt。</p>
+        </div>
+        <div class="hero-meta">
+            <div class="hero-stat"><strong>13</strong><span>設定模組</span></div>
+            <div class="hero-stat"><strong>Live</strong><span>即時 Prompt 預覽</span></div>
+            <div class="hero-stat"><strong>Local</strong><span>瀏覽器自動保存</span></div>
+        </div>
+    </section>
+
+<div class="container" id="generator">
+    <div class="header">
+        <h1>AI 時尚模特兒 Prompt 生成器</h1>
+    </div>
+
+    <!-- 左側輸入區 -->
+    <div class="form-container">
+
+        <!-- ① 基本設定 -->
+        <div class="card">
+            <div class="card-title">① 基本設定</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>圖片比例</label>
+                    <select id="aspectRatio" onchange="updateSubDesc('aspectRatio')"></select>
+                    <div id="aspectRatio-desc" class="sub-desc"></div>
+                </div>
+                <div class="form-group">
+                    <label>圖片數量</label>
+                    <div class="counter-container">
+                        <button class="counter-btn" onclick="adjustCount(-1)">-</button>
+                        <input type="text" id="imgCount" value="1" readonly>
+                        <button class="counter-btn" onclick="adjustCount(1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newAspectRatioName" placeholder="比例名稱 (如 2:1)">
+                <input type="text" id="newAspectRatioDesc" placeholder="描述 (選填)">
+                <button class="btn btn-secondary" onclick="addCustomOption('aspectRatio')">＋新增圖片比例</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('aspectRatio')">刪除圖片比例</button>
+            </div>
+        </div>
+
+        <!-- ② 模特設定 -->
+        <div class="card">
+            <div class="card-title">② 模特設定</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>性別</label>
+                    <select id="gender" onchange="generatePrompt()">
+                        <option value="女性">女性</option>
+                        <option value="男性">男性</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>髮型</label>
+                    <input type="text" id="hair" placeholder="例：微捲長髮、俐落短髮" oninput="generatePrompt()">
+                </div>
+                <div class="form-group">
+                    <label>表情預設</label>
+                    <select id="expression" onchange="updateSubDesc('expression')"></select>
+                    <div id="expression-desc" class="sub-desc"></div>
+                </div>
+                <div class="form-group">
+                    <label>特殊細節</label>
+                    <input type="text" id="modelDetail" placeholder="例：淺色雀斑、雀斑" oninput="generatePrompt()">
+                </div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newExpressionName" placeholder="表情名稱">
+                <input type="text" id="newExpressionDesc" placeholder="表情描述">
+                <button class="btn btn-secondary" onclick="addCustomOption('expression')">＋新增表情</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('expression')">刪除表情</button>
+            </div>
+        </div>
+
+        <!-- ③ 上身服裝 -->
+        <div class="card">
+            <div class="card-title">③ 上身服裝</div>
+            <div class="form-grid">
+                <div class="form-group"><label>上衣類型</label><input type="text" id="topType" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>顏色</label><input type="text" id="topColor" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>領型</label><input type="text" id="topCollar" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>袖長</label><input type="text" id="topSleeve" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>衣長</label><input type="text" id="topLength" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>版型</label><input type="text" id="topFit" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>材質</label><input type="text" id="topMaterial" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>Logo位置</label><input type="text" id="topLogo" oninput="generatePrompt()"></div>
+                <div class="form-group full-width"><label>特殊細節</label><input type="text" id="topDetail" oninput="generatePrompt()"></div>
+            </div>
+        </div>
+
+        <!-- ④ 下身服裝 -->
+        <div class="card">
+            <div class="card-title">④ 下身服裝</div>
+            <div class="form-grid">
+                <div class="form-group"><label>褲子類型</label><input type="text" id="bottomType" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>顏色</label><input type="text" id="bottomColor" oninput="generatePrompt()"></div>
+                <div class="form-group">
+                    <label>腰型</label>
+                    <select id="bottomWaist" onchange="generatePrompt()">
+                        <option value="">請選擇</option>
+                        <option value="高腰">高腰</option>
+                        <option value="中高腰">中高腰</option>
+                        <option value="中腰">中腰</option>
+                        <option value="中低腰">中低腰</option>
+                        <option value="低腰">低腰</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>褲長</label><input type="text" id="bottomLength" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>寬鬆程度</label><input type="text" id="bottomFit" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>褲管</label><input type="text" id="bottomLeg" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>開岔</label><input type="text" id="bottomSlit" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>材質</label><input type="text" id="bottomMaterial" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>Logo 位置</label><input type="text" id="bottomLogo" oninput="generatePrompt()"></div>
+                <div class="form-group full-width"><label>特殊細節</label><input type="text" id="bottomDetail" oninput="generatePrompt()"></div>
+            </div>
+        </div>
+
+        <!-- 外套／外搭 -->
+        <div class="card">
+            <div class="card-title">外套／外搭</div>
+            <div class="form-grid">
+                <div class="form-group"><label>類型</label><input type="text" id="outerType" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>顏色</label><input type="text" id="outerColor" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>衣長</label><input type="text" id="outerLength" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>袖長</label><input type="text" id="outerSleeve" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>版型</label><input type="text" id="outerFit" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>材質</label><input type="text" id="outerMaterial" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>Logo 位置</label><input type="text" id="outerLogo" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>特殊細節</label><input type="text" id="outerDetail" placeholder="自行輸入" oninput="generatePrompt()"></div>
+            </div>
+        </div>
+
+        <!-- ⑤ 鞋子&襪子 -->
+        <div class="card">
+            <div class="card-title">⑤ 鞋子&襪子</div>
+            <div class="form-grid">
+                <div class="form-group"><label>鞋子樣式</label><input type="text" id="shoesStyle" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>鞋子顏色</label><input type="text" id="shoesColor" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group full-width"><label>鞋子細節</label><input type="text" id="shoesDetail" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>襪子樣式</label><input type="text" id="socksStyle" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group"><label>襪子顏色</label><input type="text" id="socksColor" placeholder="自行輸入" oninput="generatePrompt()"></div>
+                <div class="form-group full-width"><label>襪子細節</label><input type="text" id="socksDetail" placeholder="自行輸入" oninput="generatePrompt()"></div>
+            </div>
+        </div>
+
+        <!-- ⑥ 配件 -->
+        <div class="card">
+            <div class="card-title">⑥ 配件 (可複選)</div>
+            <div class="checkbox-group" id="accessoryCheckboxes"></div>
+            <div id="dynamicAccessoriesContainer"></div>
+            <div class="form-group full-width" style="margin-top:12px;">
+                <label>配件總體細節</label>
+                <input type="text" id="accessoryOverall" oninput="generatePrompt()">
+            </div>
+        </div>
+
+        <!-- ⑦ 棚拍&場景設定 -->
+        <div class="card">
+            <div class="card-title">⑦ 棚拍&場景設定</div>
+            <div class="form-group">
+                <select id="scene" onchange="updateSubDesc('scene')"></select>
+                <div id="scene-desc" class="sub-desc"></div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newSceneName" placeholder="場景名稱">
+                <input type="text" id="newSceneDesc" placeholder="場景描述">
+                <button class="btn btn-secondary" onclick="addCustomOption('scene')">＋新增場景</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('scene')">刪除場景</button>
+            </div>
+        </div>
+
+        <!-- ⑧ 動作 -->
+        <div class="card">
+            <div class="card-title">⑧ 動作</div>
+            <div class="form-group">
+                <select id="pose" onchange="updateSubDesc('pose')"></select>
+                <div id="pose-desc" class="sub-desc"></div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newPoseName" placeholder="動作名稱">
+                <input type="text" id="newPoseDesc" placeholder="動作描述">
+                <button class="btn btn-secondary" onclick="addCustomOption('pose')">＋新增動作</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('pose')">刪除動作</button>
+            </div>
+        </div>
+
+        <!-- ⑨ 模特拍照角度 -->
+        <div class="card">
+            <div class="card-title">⑨ 模特拍照角度</div>
+            <div class="form-group">
+                <select id="angle" onchange="updateSubDesc('angle')"></select>
+                <div id="angle-desc" class="sub-desc"></div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newAngleName" placeholder="角度名稱">
+                <input type="text" id="newAngleDesc" placeholder="角度描述">
+                <button class="btn btn-secondary" onclick="addCustomOption('angle')">＋新增角度</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('angle')">刪除角度</button>
+            </div>
+        </div>
+
+        <!-- ⑩ 機位角度 -->
+        <div class="card">
+            <div class="card-title">⑩ 機位角度</div>
+            <div class="form-group">
+                <select id="cameraHeight" onchange="updateSubDesc('cameraHeight')"></select>
+                <div id="cameraHeight-desc" class="sub-desc"></div>
+            </div>
+            <div class="custom-item-bar">
+                <input type="text" id="newCameraHeightName" placeholder="機位名稱">
+                <input type="text" id="newCameraHeightDesc" placeholder="機位描述">
+                <button class="btn btn-secondary" onclick="addCustomOption('cameraHeight')">＋新增機位</button>
+                <button class="btn btn-danger" onclick="deleteCustomOption('cameraHeight')">刪除機位</button>
+            </div>
+        </div>
+
+        <!-- ⑪ 攝影質感 -->
+        <div class="card"><div class="card-title">⑪ 攝影質感 <span class="module-meta">固定生成・固定顯示於右側即時預覽</span></div><div class="fixed-module">
+            <div class="fixed-module-head"><div><strong>攝影質感組</strong><div class="module-meta">預設開啟；勾選項目會自動加入 Prompt。</div></div><label class="module-toggle"><input type="checkbox" id="photoQualityEnabled" checked onchange="handleModuleToggle('photoQuality')"> 啟用</label></div>
+            <div class="btn-group" style="margin:0 0 12px;"><button class="btn btn-secondary" onclick="toggleSelectAll('photoQuality', true)">全選</button><button class="btn btn-secondary" onclick="toggleSelectAll('photoQuality', false)">全取消</button><button class="btn btn-danger" onclick="deleteTagOptions('photoQuality')">刪除攝影質感</button></div>
+            <div class="tag-list" id="photoQualityCheckboxes"></div><div class="custom-item-bar"><input type="text" id="newPhotoQualityText" placeholder="質感描述，例如：自然高光滾落在皮膚表面"><button class="btn btn-secondary" onclick="addTagOption('photoQuality')">＋攝影質感</button></div><div class="delete-info">刪除功能只會移除你新增的自訂項目；內建固定項目保留。</div>
+        </div></div>
+
+        <!-- ⑫ 皮膚微觀細節 -->
+        <div class="card"><div class="card-title">⑫ 皮膚微觀細節 <span class="module-meta">正面提示詞・固定顯示於右側即時預覽</span></div><div class="fixed-module">
+            <div class="fixed-module-head"><div><strong>皮膚正面提示詞</strong><div class="module-meta">預設開啟；只保留真實、自然、攝影感的正面描述。</div></div><label class="module-toggle"><input type="checkbox" id="skinDetailEnabled" checked onchange="handleModuleToggle('skinDetail')"> 啟用</label></div>
+            <div class="btn-group" style="margin:0 0 12px;"><button class="btn btn-secondary" onclick="toggleSelectAll('skinDetail', true)">全選</button><button class="btn btn-secondary" onclick="toggleSelectAll('skinDetail', false)">全取消</button><button class="btn btn-danger" onclick="deleteTagOptions('skinDetail')">刪除皮膚正面提示詞</button></div>
+            <div class="tag-list" id="skinDetailCheckboxes"></div><div class="custom-item-bar"><input type="text" id="newSkinDetailText" placeholder="皮膚正面提示詞描述，例如：鼻翼周圍保留細微真實紋理"><button class="btn btn-secondary" onclick="addTagOption('skinDetail')">＋皮膚正面提示詞</button></div><div class="delete-info">刪除功能只會移除你新增的自訂項目；內建固定項目保留。</div>
+        </div></div>
+
+        <!-- ⑬ 禁止項目 -->
+        <div class="card"><div class="card-title">⑬ 【禁止項目】 <span class="module-meta">固定生成・AI 強制執行・固定顯示於右側即時預覽</span></div><div class="fixed-module">
+            <div class="fixed-module-head"><div><strong>禁止項目組</strong><div class="module-meta">預設開啟；限制 AI 生成方向，降低 AI 臉、假皮膚、肢體變形與背景異常。</div></div><label class="module-toggle"><input type="checkbox" id="negativeRulesEnabled" checked onchange="handleModuleToggle('negativeRules')"> 啟用</label></div>
+            <div class="btn-group" style="margin:0 0 12px;"><button class="btn btn-secondary" onclick="toggleSelectAll('negativeRules', true)">全選</button><button class="btn btn-secondary" onclick="toggleSelectAll('negativeRules', false)">全取消</button><button class="btn btn-danger" onclick="deleteTagOptions('negativeRules')">刪除禁止項目</button></div>
+            <div class="tag-list" id="negativeRulesCheckboxes"></div><div class="custom-item-bar"><input type="text" id="newNegativeRulesText" placeholder="禁止項目描述，例如：不要改變服裝原始 Logo 的位置與比例"><button class="btn btn-secondary" onclick="addTagOption('negativeRules')">＋禁止項目</button></div><div class="delete-info">刪除功能只會移除你新增的自訂項目；內建固定規則保留。</div>
+        </div></div>
+
+    </div>
+
+    <!-- 右側 Prompt 預覽與操作按鈕 -->
+    <div class="preview-sidebar">
+        <div class="preview-card">
+            <div class="card-title">Prompt 預覽與自訂區</div>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label>自訂備註</label>
+                <textarea id="customNote" rows="3" placeholder="請在此輸入備註內容..." oninput="generatePrompt()"></textarea>
+            </div>
+
+            <div id="moduleStatusPreview" class="preview-extra"></div>
+            <textarea id="promptOutput" class="prompt-preview" readonly></textarea>
+            
+            <div class="action-buttons" style="grid-template-columns: repeat(3, 1fr);">
+                <button class="btn btn-primary" onclick="copyPrompt()">1. 複製提示詞</button>
+                <button class="btn btn-secondary" onclick="generatePrompt()">2. 生成 Prompt</button>
+                <button class="btn btn-danger" onclick="clearAllSettings()">3. 清除設定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 預設資料選單
+const defaultData = {
+    aspectRatio: [
+        { name: "1:1", desc: "正方形，常用於 Instagram 貼文與大頭貼。" },
+        { name: "16:9", desc: "橫式寬螢幕，常用於 YouTube 影片、電腦桌布與網站橫幅。" },
+        { name: "9:16", desc: "直式全螢幕，常用於手機 IG 限時動態、TikTok 與 Reels。" },
+        { name: "4:3", desc: "傳統相片比例，常用於數位相機與平板螢幕。" },
+        { name: "3:4", desc: "直式照片，常用於直式人像攝影或手機拍照預設。" }
+    ],
+    expression: [
+        { name: "請選擇表情", desc: "" },
+        { name: "傲然冷淡", desc: "無表情、冷漠神態、泰然自若" },
+        { name: "高級厭世", desc: "輕蔑/厭世眼神、情緒感高級眼神" },
+        { name: "微張嘴唇", desc: "雙唇微張、放鬆的下顎線" },
+        { name: "壓低眉眼", desc: "微蹙眉展現張力、穿透力的眼神" }
+    ],
+    scene: [
+        { name: "無影子純白色無縫棚拍背景", desc: "純白無瑕棚拍" },
+        { name: "柔光高對比", desc: "高對比光影" },
+        { name: "商業棚拍", desc: "標準商業光影" },
+        { name: "時尚雜誌", desc: "高端雜誌封面質感" },
+        { name: "電商商品照", desc: "清晰商品展現風格" }
+    ],
+    pose: [
+        { name: "請選擇動作", desc: "" },
+        { name: "不對稱幾何肢體", desc: "不對稱身體角度、幾何感硬照姿勢" },
+        { name: "視覺延伸", desc: "延伸的四肢、幾何感硬照姿勢、一腳向前延伸、拉長的身影" },
+        { name: "動態瞬間", desc: "邁步定格、/面料隨風飄動、動態捕捉" },
+        { name: "情緒張力", desc: "微微歪頭、手輕撫下巴、雙臂放鬆交叉" },
+        { name: "正面基本款", desc: "雙腳微開站立、3/4 側面、雙手插口袋" },
+        { name: "生活感自然互動", desc: "自然抓拍感、拿著咖啡杯" }
+    ],
+    angle: [
+        { name: "請選擇角度", desc: "" },
+        { name: "正面全身", desc: "人物正面朝向鏡頭，主要呈現人物正面與服裝正面。" },
+        { name: "正面半身 (模特腰部以上)", desc: "人物正面朝向鏡頭，主要呈現人物正面與服裝正面。" },
+        { name: "正面半身ⅱ (模特膝蓋以上)", desc: "人物正面朝向鏡頭，主要呈現人物正面與服裝正面。" },
+        { name: "三分之四全身", desc: "人物本身約45°三分之四角度，主要呈現人物正面與側面的服裝細節。" },
+        { name: "三分之四半身 (模特腰部以上)", desc: "人物本身約45°三分之四角度，主要呈現人物正面與側面的服裝細節。" },
+        { name: "三分之四半身ⅱ (模特膝蓋以上)", desc: "人物本身約45°三分之四角度，主要呈現人物正面與側面的服裝細節。" },
+        { name: "側面全身", desc: "人物本身約90°側面角度，主要呈現人物側面與服裝側面輪廓。" },
+        { name: "側面半身 (模特腰部以上)", desc: "人物本身約90°側面角度，主要呈現人物側面與服裝側面輪廓。" },
+        { name: "側面半身ⅱ (模特膝蓋以上)", desc: "人物本身約90°側面角度，主要呈現人物側面與服裝側面輪廓。" },
+        { name: "背面全身", desc: "人物背對鏡頭，主要呈現人物背面與服裝背面。" },
+        { name: "背面半身 (模特腰部以上)", desc: "人物背對鏡頭，主要呈現人物背面與服裝背面。" },
+        { name: "背面半身ⅱ (模特膝蓋以上)", desc: "人物背對鏡頭，主要呈現人物背面與服裝背面。" }
+    ],
+    cameraHeight: [
+        { name: "請選擇機位", desc: "" },
+        { name: "平視", desc: "攝影機位於接近人物視線高度的位置，以自然平視角度拍攝。" },
+        { name: "微高角度", desc: "攝影機位於人物視線稍高的位置，向下輕微拍攝。" },
+        { name: "高角度", desc: "攝影機位於人物前方較高位置，向下約20–30°拍攝。(非極端俯拍)" },
+        { name: "微低角度", desc: "攝影機位於人物視線稍低的位置，向上輕微拍攝。" },
+        { name: "低角度", desc: "攝影機位於人物較低位置，向上拍攝。" }
+    ],
+    photoQuality: [
+        {text:"85mm f/1.4 鏡頭視覺",fixed:true},{text:"自然淺景深",fixed:true},{text:"自然焦外",fixed:true},{text:"真實皮膚質感",fixed:true},
+        {text:"真實布料質感",fixed:true},{text:"自然鏡頭成像",fixed:true},{text:"原片直出感",fixed:true},{text:"細微自然膠片顆粒",fixed:true}
+    ],
+    skinDetail: [
+        {text:"保留真實攝影皮膚",fixed:true},{text:"自然毛孔",fixed:true},{text:"細微皮膚紋理",fixed:true},{text:"唇紋",fixed:true},{text:"臉頰汗毛",fixed:true},
+        {text:"個別微小瑕疵",fixed:true},{text:"輕微自然油光",fixed:true},{text:"眼下細紋",fixed:true},{text:"自然臉部不對稱",fixed:true},
+        {text:"左右眉毛細微差異",fixed:true},{text:"左右眼自然差異",fixed:true}
+    ],
+    negativeRules: [
+        {text:"不要產生 AI 臉、塑料皮膚、蠟像感或過度磨皮。",fixed:true},
+        {text:"不要使用過度柔焦、過度銳化或過度商業精修。",fixed:true},
+        {text:"不要產生 CGI、3D 渲染或明顯合成感。",fixed:true},
+        {text:"不要改變模特的臉部特徵、身材比例與服裝版型。",fixed:true},
+        {text:"不要增加不存在的 Logo、圖案、配件或服裝細節。",fixed:true},
+        {text:"不要出現多餘手指、肢體變形、關節錯位或不自然的手部姿勢。",fixed:true},
+        {text:"不要讓背景出現灰色、髒污、接縫或其他物件。",fixed:true},
+        {text:"不要讓人物與背景產生明顯的後製貼圖感。",fixed:true}
+    ],
+    accessoriesList: ["無", "帽子", "墨鏡", "眼鏡", "項鍊", "手鍊", "戒指", "手錶", "其他"]
+};
+
+// LocalStorage + 初始化
+function getStoredData(key){const raw=localStorage.getItem(key);if(!raw)return structuredClone(defaultData[key]);try{const d=JSON.parse(raw);if(['photoQuality','skinDetail','negativeRules'].includes(key)){if(!Array.isArray(d))return structuredClone(defaultData[key]);const current=structuredClone(defaultData[key]);const oldItems=d.map(x=>typeof x==='string'?{text:x,fixed:false}:{text:x.text||'',fixed:!!x.fixed});const currentTexts=new Set(current.map(x=>x.text));const custom=oldItems.filter(x=>x.text&&!currentTexts.has(x.text)).map(x=>({text:x.text,fixed:false}));return current.concat(custom);}return Array.isArray(d)?d:structuredClone(defaultData[key]);}catch(e){return structuredClone(defaultData[key]);}}
+function saveData(key,data){localStorage.setItem(key,JSON.stringify(data));}
+const moduleEnabledDefaults={photoQuality:true,skinDetail:true,negativeRules:true};
+function getModuleEnabled(key){const v=localStorage.getItem('moduleEnabled_'+key);return v===null?moduleEnabledDefaults[key]:v==='true';}
+function setModuleEnabled(key,v){localStorage.setItem('moduleEnabled_'+key,String(v));}
+window.onload=function(){renderSelects();renderAccessoriesCheckboxes();['photoQuality','skinDetail','negativeRules'].forEach(k=>{renderTagCheckboxes(k);restoreTagSelection(k);const t=document.getElementById(k+'Enabled');if(t)t.checked=getModuleEnabled(k);});bindAutosave();generatePrompt();};
+function bindAutosave(){document.querySelectorAll('input[type="text"],select,textarea').forEach(el=>{if(el.id.startsWith('new')||el.id==='promptOutput')return;el.addEventListener('input',saveFormState);el.addEventListener('change',saveFormState);});restoreFormState();}
+function saveFormState(){const st={};document.querySelectorAll('input[type="text"],select,textarea').forEach(el=>{if(el.id.startsWith('new')||el.id==='promptOutput')return;st[el.id]=el.value;});st.imgCount=document.getElementById('imgCount')?.value||'1';localStorage.setItem('promptFormState',JSON.stringify(st));}
+function restoreFormState(){const raw=localStorage.getItem('promptFormState');if(!raw)return;try{Object.entries(JSON.parse(raw)).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&id!=='promptOutput'&&typeof v==='string')el.value=v;});}catch(e){}}
+function renderSelects(){['aspectRatio','expression','scene','pose','angle','cameraHeight'].forEach(k=>{const sel=document.getElementById(k),list=getStoredData(k);sel.innerHTML='';list.forEach(it=>{const o=document.createElement('option');o.value=it.name;o.innerText=it.name;o.dataset.desc=it.desc||'';sel.appendChild(o);});updateSubDesc(k);});}
+function updateSubDesc(key){const s=document.getElementById(key),d=document.getElementById(key+'-desc');if(!s||!d)return;const o=s.options[s.selectedIndex];d.innerText=o?o.dataset.desc||'':'';generatePrompt();}
+function addCustomOption(key){const ni=document.getElementById('new'+capitalize(key)+'Name'),di=document.getElementById('new'+capitalize(key)+'Desc');const name=ni.value.trim(),desc=di.value.trim();if(!name)return;const list=getStoredData(key);list.push({name,desc});saveData(key,list);ni.value='';di.value='';renderSelects();}
+function deleteCustomOption(key){const sel=document.getElementById(key),val=sel.value,list=getStoredData(key);if(defaultData[key]?.some(x=>x.name===val)){alert('內建預設項目不能刪除。');return;}saveData(key,list.filter(x=>x.name!==val));renderSelects();}
+function adjustCount(delta){const i=document.getElementById('imgCount');i.value=Math.max(1,parseInt(i.value)+delta);saveFormState();generatePrompt();}
+function renderAccessoriesCheckboxes(){const c=document.getElementById('accessoryCheckboxes');c.innerHTML='';defaultData.accessoriesList.forEach(item=>{const l=document.createElement('label');l.className='checkbox-label';l.innerHTML=`<input type="checkbox" value="${escapeHtml(item)}" onchange="handleAccessoryChange(this)"> ${escapeHtml(item)}`;c.appendChild(l);});}
+function handleAccessoryChange(chk){if(chk.value==='無'&&chk.checked)document.querySelectorAll('#accessoryCheckboxes input').forEach(c=>{if(c.value!=='無')c.checked=false});else if(chk.checked){const n=document.querySelector('#accessoryCheckboxes input[value="無"]');if(n)n.checked=false;}renderDynamicAccessories();generatePrompt();}
+function renderDynamicAccessories(){const c=document.getElementById('dynamicAccessoriesContainer');c.innerHTML='';Array.from(document.querySelectorAll('#accessoryCheckboxes input:checked')).map(x=>x.value).filter(v=>v!=='無').forEach(acc=>{const b=document.createElement('div');b.className='dynamic-accessory-box';b.dataset.acc=acc;const title=acc==='其他'?`<input type="text" placeholder="請輸入配件名稱" class="acc-name" oninput="generatePrompt()" style="width:140px;font-weight:bold;padding:6px;border:1px solid var(--border-color);border-radius:4px;">`:`<strong>${escapeHtml(acc)}：</strong>`;b.innerHTML=title+`<input type="text" placeholder="顏色" class="acc-color" oninput="generatePrompt()"><input type="text" placeholder="材質" class="acc-mat" oninput="generatePrompt()"><input type="text" placeholder="細節" class="acc-detail" oninput="generatePrompt()">`;c.appendChild(b);});}
+function normalizeTagList(list){return list.map(x=>typeof x==='string'?{text:x,fixed:false}:{text:x.text||'',fixed:!!x.fixed});}
+function renderTagCheckboxes(key){const c=document.getElementById(key+'Checkboxes');c.innerHTML='';normalizeTagList(getStoredData(key)).forEach((it,i)=>{if(!it.text)return;const w=document.createElement('span');w.className='tag-item'+(it.fixed?'':' custom');w.innerHTML=`<label class="checkbox-label"><input type="checkbox" data-index="${i}" value="${escapeHtml(it.text)}" checked onchange="generatePrompt();saveTagSelection('${key}')"> ${escapeHtml(it.text)}</label>`;c.appendChild(w);});}
+function addTagOption(key){const i=document.getElementById('new'+capitalize(key)+'Text'),t=i.value.trim();if(!t)return;const list=normalizeTagList(getStoredData(key));if(list.some(x=>x.text===t)){alert('已存在相同項目。');return;}list.push({text:t,fixed:false});saveData(key,list);i.value='';renderTagCheckboxes(key);generatePrompt();}
+function deleteTagOptions(key){const list=normalizeTagList(getStoredData(key)),idx=new Set(Array.from(document.querySelectorAll('#'+key+'Checkboxes input:checked')).map(c=>+c.dataset.index));const next=list.filter((it,i)=>!(idx.has(i)&&!it.fixed));if(next.length===list.length){alert('目前沒有可刪除的自訂項目。');return;}saveData(key,next);localStorage.removeItem('tagSelection_'+key);renderTagCheckboxes(key);generatePrompt();}
+function toggleSelectAll(key,state){document.querySelectorAll('#'+key+'Checkboxes input').forEach(c=>c.checked=state);saveTagSelection(key);generatePrompt();}
+function saveTagSelection(key){localStorage.setItem('tagSelection_'+key,JSON.stringify(Array.from(document.querySelectorAll('#'+key+'Checkboxes input:checked')).map(c=>+c.dataset.index)));}
+function restoreTagSelection(key){const raw=localStorage.getItem('tagSelection_'+key);if(!raw)return;try{const s=new Set(JSON.parse(raw));document.querySelectorAll('#'+key+'Checkboxes input').forEach(c=>c.checked=s.has(+c.dataset.index));}catch(e){}}
+function handleModuleToggle(key){setModuleEnabled(key,document.getElementById(key+'Enabled').checked);generatePrompt();}
+function escapeHtml(v){return String(v).replace(/[&<>\'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
+// 首字母大寫輔助函式
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// 驗證字串是否有效 (過濾無、沒有與空值)
+function isValid(val) {
+    if (!val) return false;
+    const clean = val.trim().toLowerCase();
+    return clean !== '' && clean !== '無' && clean !== '沒有' && clean !== 'none' && !clean.includes('請選擇');
+}
+
+// 生成 Prompt
+function generatePrompt(){const L=[],gender=document.getElementById('gender').value;L.push(`【任務】\n生成一張高品質的${gender}時尚服裝棚拍照片。`);const a=document.getElementById('aspectRatio').value,c=document.getElementById('imgCount').value,b=[];if(isValid(a))b.push(`圖片比例：${a}`);if(isValid(c))b.push(`圖片數量：${c}張`);if(b.length)L.push(`\n【基本設定】\n* ${b.join('\n* ')}`);let m=[];if(isValid(gender))m.push(`性別：${gender}`);const hair=document.getElementById('hair').value;if(isValid(hair))m.push(`髮型：${hair}`);const ex=document.getElementById('expression').value;if(isValid(ex)){const d=document.getElementById('expression-desc').innerText;m.push(`表情：${ex}${d?' ('+d+')':''}`)}const md=document.getElementById('modelDetail').value;if(isValid(md))m.push(`特殊細節：${md}`);m.push('【人物一致性】保持參考圖人物的五官、臉型、身材比例、髮型與人物身份一致，不要改變人物身份。');L.push(`\n【模特設定】\n* ${m.join('\n* ')}`);const tf=[['上衣類型','topType'],['顏色','topColor'],['領型','topCollar'],['袖長','topSleeve'],['衣長','topLength'],['版型','topFit'],['材質','topMaterial'],['Logo位置','topLogo'],['特殊細節','topDetail']],ts=[];tf.forEach(([lab,id])=>{const v=document.getElementById(id).value;if(isValid(v))ts.push(`${lab}：${v}`)});if(ts.length)L.push(`\n【上身服裝】\n* ${ts.join('\n* ')}`);const bf=[['褲子類型','bottomType'],['顏色','bottomColor'],['腰型','bottomWaist'],['褲長','bottomLength'],['寬鬆程度','bottomFit'],['褲管','bottomLeg'],['開岔','bottomSlit'],['材質','bottomMaterial'],['Logo位置','bottomLogo'],['特殊細節','bottomDetail']],bs=[];bf.forEach(([lab,id])=>{const v=document.getElementById(id).value;if(isValid(v))bs.push(`${lab}：${v}`)});if(bs.length)L.push(`\n【下身服裝】\n* ${bs.join('\n* ')}`);const of=[['類型','outerType'],['顏色','outerColor'],['衣長','outerLength'],['袖長','outerSleeve'],['版型','outerFit'],['材質','outerMaterial'],['Logo位置','outerLogo'],['特殊細節','outerDetail']],os=[];of.forEach(([lab,id])=>{const v=document.getElementById(id).value;if(isValid(v))os.push(`${lab}：${v}`)});if(os.length)L.push(`\n【外套／外搭】\n* ${os.join('\n* ')}`);const shoeFields=[['鞋子樣式','shoesStyle'],['鞋子顏色','shoesColor'],['鞋子細節','shoesDetail'],['襪子樣式','socksStyle'],['襪子顏色','socksColor'],['襪子細節','socksDetail']],ss=[];shoeFields.forEach(([lab,id])=>{const v=document.getElementById(id).value;if(isValid(v))ss.push(`${lab}：${v}`)});if(ss.length)L.push(`\n【鞋子&襪子】\n* ${ss.join('\n* ')}`);const acc=[];document.querySelectorAll('.dynamic-accessory-box').forEach(box=>{let n=box.dataset.acc;if(n==='其他'){const x=box.querySelector('.acc-name').value;if(isValid(x))n=x;else n='其他配件'}const d=[];for(const [sel,lab] of [['.acc-color','顏色'],['.acc-mat','材質'],['.acc-detail','細節']]){const v=box.querySelector(sel).value;if(isValid(v))d.push(`${lab}：${v}`)}acc.push(`${n}${d.length?' ('+d.join(', ')+')':''}`)});const ao=document.getElementById('accessoryOverall').value;if(isValid(ao))acc.push(`總體細節：${ao}`);if(acc.length)L.push(`\n【配件飾品】\n* ${acc.join('\n* ')}`);for(const [id,lab] of [['scene','場景設定'],['pose','模特動作'],['angle','拍照角度'],['cameraHeight','機位高度']]){const v=document.getElementById(id).value;if(isValid(v)){const d=document.getElementById(id+'-desc').innerText;L.push(`\n【${lab}】\n* ${v}${d?' ('+d+')':''}`)}}const photo=getSelectedTags('photoQuality'),skin=getSelectedTags('skinDetail'),neg=getSelectedTags('negativeRules'),po=getModuleEnabled('photoQuality'),so=getModuleEnabled('skinDetail'),no=getModuleEnabled('negativeRules');if(po&&photo.length)L.push(`\n【攝影質感】\n* ${photo.join('\n* ')}`);if(so&&skin.length)L.push(`\n【皮膚微觀細節｜正面提示詞】\n* ${skin.join('\n* ')}`);if(no&&neg.length)L.push(`\n【禁止項目｜AI 強制執行】\n* ${neg.join('\n* ')}`);const note=document.getElementById('customNote').value;if(isValid(note))L.push(`\n【備註】\n* ${note}`);document.getElementById('promptOutput').value=L.join('\n');renderModuleStatusPreview(po,so,no,photo,skin,neg);}
+function getSelectedTags(key){return Array.from(document.querySelectorAll('#'+key+'Checkboxes input:checked')).map(c=>c.value).filter(isValid)}
+function renderModuleStatusPreview(a,b,c,p,s,n){const el=document.getElementById('moduleStatusPreview');if(!el)return;const st=x=>`<span class="status-badge${x?'':' off'}">${x?'● 已啟用':'○ 已停用'}</span>`;el.innerHTML=`<strong>右側即時附加模組</strong><br>⑪ 攝影質感 ${st(a)} · ${p.length} 項<br>⑫ 皮膚微觀細節 ${st(b)} · ${s.length} 項<br>⑬ 禁止項目 ${st(c)} · ${n.length} 項`;}
+
+// 1. 複製提示詞
+function copyPrompt() {
+    const text = document.getElementById('promptOutput').value;
+    navigator.clipboard.writeText(text).then(() => {
+        showWebsiteToast('提示詞已複製到剪貼簿');
+    });
+}
+
+// 3. 清除設定
+function clearAllSettings(){document.querySelectorAll('input[type="text"]').forEach(i=>{if(!i.id.startsWith('new'))i.value=''});document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);document.querySelectorAll('#accessoryCheckboxes input').forEach(c=>c.checked=false);document.getElementById('imgCount').value='1';document.getElementById('dynamicAccessoriesContainer').innerHTML='';document.getElementById('customNote').value='';['photoQuality','skinDetail','negativeRules'].forEach(k=>{setModuleEnabled(k,true);const t=document.getElementById(k+'Enabled');if(t)t.checked=true;localStorage.removeItem('tagSelection_'+k)});localStorage.removeItem('promptFormState');renderSelects();['photoQuality','skinDetail','negativeRules'].forEach(k=>renderTagCheckboxes(k));generatePrompt();}
+</script>
+
+
+<div class="mobile-bottom-nav" id="mobileBottomNav">
+  <button type="button" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth',block:'start'})">
+    <span>☷</span><small>設定</small>
+  </button>
+  <button type="button" onclick="document.querySelector('.preview-sidebar').scrollIntoView({behavior:'smooth',block:'end'})">
+    <span>✦</span><small>Prompt</small>
+  </button>
+</div>
+<style>
+.mobile-bottom-nav{display:none}
+@media(max-width:700px){
+ .mobile-bottom-nav{
+   position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:120;
+   width:150px;height:54px;border:1px solid #d8d8d5;border-radius:18px;
+   background:rgba(255,255,255,.96);backdrop-filter:blur(15px);
+   box-shadow:0 8px 30px rgba(0,0,0,.12);display:grid;grid-template-columns:1fr 1fr;
+   overflow:hidden;
+ }
+ .mobile-bottom-nav button{border:0;background:transparent;color:#222;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+ .mobile-bottom-nav button+button{border-left:1px solid #e8e8e5}
+ .mobile-bottom-nav span{font-size:15px;line-height:1}.mobile-bottom-nav small{font-size:10px;color:#777}
+}
+</style>
+
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
