@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>Fashion Prompt Lab｜AI 模特兒提示詞生成器</title>
+<style>
+:root{
+  --bg:#f5f5f2;
+  --panel:#ffffff;
+  --ink:#171717;
+  --muted:#737373;
+  --line:#deded9;
+  --soft:#f0f0ec;
+  --accent:#111111;
+  --danger:#b42318;
+  --shadow:0 12px 36px rgba(0,0,0,.06);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1500px;margin:0 auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+.brand-kicker{font-size:12px;letter-spacing:.14em;color:var(--muted);margin-bottom:8px}
+.brand h1{font-size:28px;line-height:1.2;margin:0 0 8px;font-weight:750}
+.brand p{margin:0;color:var(--muted);font-size:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 13px;border-radius:12px;font-weight:650}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:#111;color:#fff;border-color:#111}
+.btn.danger{color:var(--danger)}
+.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.75fr);gap:18px;align-items:start}
+.left,.right{min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-title{display:flex;gap:10px;align-items:center}
+.badge{width:28px;height:28px;border-radius:9px;background:#111;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:750}
+h2{font-size:17px;margin:0;font-weight:750}
+.section-note{font-size:12px;color:var(--muted);line-height:1.6;margin:3px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1 / -1}
+label{font-size:12px;font-weight:700;color:#383838}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 11px;outline:none;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.04)}
+textarea{min-height:92px;resize:vertical;line-height:1.6}
+.helper{font-size:11px;color:var(--muted);line-height:1.55}
+.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.reference{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.upload-box{border:1px dashed #c9c9c2;border-radius:14px;background:#fafaf8;padding:13px;min-height:110px;display:flex;align-items:center;gap:12px}
+.thumb{width:82px;height:82px;border-radius:10px;background:#ecece7;display:grid;place-items:center;overflow:hidden;flex:none;color:#999;font-size:11px;text-align:center;padding:8px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.upload-copy{min-width:0}
+.upload-copy strong{display:block;font-size:13px;margin-bottom:4px}
+.upload-copy span{display:block;font-size:11px;color:var(--muted);line-height:1.5}
+.upload-copy input{display:none}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:8px 10px;background:#fff;font-size:12px}
+.chip input{width:auto;accent-color:#111}
+.core-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fafaf8;font-size:13px;line-height:1.6;margin-bottom:8px;position:relative;padding-right:38px}
+.core-item .tag{display:inline-block;font-size:10px;color:#666;border:1px solid #d5d5ce;border-radius:999px;padding:2px 6px;margin-right:6px;vertical-align:1px}
+.core-item.custom{background:#fff}
+.icon-btn{position:absolute;right:8px;top:8px;width:26px;height:26px;border:0;background:transparent;color:#888;border-radius:7px}
+.icon-btn:hover{background:#eee}
+.add-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.accessory-panel{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;background:#fff}
+.accessory-panel h3{font-size:13px;margin:0 0 9px}
+.small-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.action-item{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;margin-bottom:8px}
+.action-main{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.action-name{font-size:13px;font-weight:750}
+.action-desc{font-size:12px;color:#555;line-height:1.55;margin-top:5px;white-space:pre-wrap}
+.action-actions{display:flex;gap:4px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;background:#fafaf8;border:1px solid var(--line);border-radius:12px}
+.switch{position:relative;width:44px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#d5d5cf;border-radius:999px;transition:.2s;cursor:pointer}
+.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.15)}
+.switch input:checked + .slider{background:#111}
+.switch input:checked + .slider:before{transform:translateX(20px)}
+.prompt-card{position:sticky;top:14px}
+.status{border-radius:12px;padding:11px 12px;margin-bottom:10px;border:1px solid var(--line);background:#fafaf8;font-size:12px;line-height:1.55}
+.status.ok{border-color:#d8ddd3;background:#f7faf5}
+.status.warn{border-color:#e4d2c0;background:#fbf6f0}
+.module-line{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.module-pill{font-size:11px;background:#efefeb;border-radius:999px;padding:5px 8px}
+.preview-wrap{position:relative}
+#promptPreview{min-height:620px;font-size:13px;line-height:1.72;background:#161616;color:#f4f4f4;border-color:#161616;padding:15px}
+.copy-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.notice{font-size:11px;color:var(--muted);line-height:1.6;margin-top:8px}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+@media (max-width:1080px){.layout{grid-template-columns:1fr}.prompt-card{position:static}.reference{grid-template-columns:1fr 1fr}}
+@media (max-width:720px){.app{padding:12px}.topbar{flex-direction:column}.actions{justify-content:flex-start}.grid,.grid.three,.small-grid,.reference{grid-template-columns:1fr}.card{padding:14px;border-radius:15px}.brand h1{font-size:23px}.copy-row{grid-template-columns:1fr}.prompt-card{margin-top:2px}#promptPreview{min-height:520px}.section-head{flex-direction:column}}
+
+.toggle-list{display:flex;flex-direction:column;gap:8px}
+.toggle-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fafaf8}
+.toggle-item.custom{background:#fff}
+.toggle-copy{min-width:0;font-size:13px;line-height:1.55}
+.toggle-actions{display:flex;align-items:center;gap:8px;flex:none}
+.switch.compact{width:40px;height:22px}
+.switch.compact .slider:before{width:16px;height:16px;left:3px;top:3px}
+.switch.compact input:checked + .slider:before{transform:translateX(18px)}
+.action-add-fields{display:grid;grid-template-columns:minmax(120px,.65fr) minmax(0,1.7fr);gap:10px;margin-top:10px;align-items:start}
+.action-name-field input{min-height:42px}
+.action-desc-field textarea{min-height:90px}
+.independent-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.add-panel{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafaf8}
+.add-panel>label{display:block;margin-bottom:7px}
+.scene-add-row{margin-top:10px}
+.signature{text-align:center;padding:24px 0 30px;color:#8a8a84;font-size:12px;letter-spacing:.14em;font-weight:700}
+@media (max-width:720px){.action-add-fields,.independent-add-grid{grid-template-columns:1fr}.action-name-field input{max-width:55%}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-kicker">FASHION / MODEL / IMAGE PROMPT</div>
+      <h1>Fashion Prompt Lab</h1>
+      <p>AI 模特兒提示詞生成器｜依照人物一致性與新版提示詞規則編譯</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="saveBtn">儲存設定</button>
+      <button class="btn" id="resetBtn">重設</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="left">
+      <section class="card">
+        <div class="section-head">
+          <div><div class="section-title"><div class="badge">01</div><h2>人物</h2></div><p class="section-note">使用者只更改性別與髮型。模特兒身分、臉部特徵與身材比例維持核心一致性規則。</p></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label>性別</label><select id="gender"><option value="女性">女性</option><option value="男性">男性</option></select></div>
+          <div class="field"><label>髮型</label><input id="hairstyle" value="長髮" placeholder="例如：長髮、短髮、低馬尾"></div>
+        </div>
+        <div class="core-item" style="margin-top:12px"><span class="tag">固定</span>維持參考圖中的自然髮色、髮型與身材比例</div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div><div class="section-title"><div class="badge">02</div><h2>表情</h2></div><p class="section-note">內建條件永遠保留。自訂表情可以新增或刪除。</p></div>
+        </div>
+        <div id="expressionList"></div>
+        <div class="add-row"><input id="expressionInput" placeholder="新增表情描述，例如：嘴角微微放鬆"></input><button class="btn" id="addExpression">新增</button></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">03</div><h2>服裝</h2></div><p class="section-note">每個服裝段落會用「、」區隔內容，不使用句號。未填欄位不會硬塞內容。</p></div></div>
+        <div class="core-item"><span class="tag">規則</span>服裝輪廓、比例、長度、結構、材質與細節必須準確呈現，禁止自行加入未指定元素</div>
+        <hr>
+        <h3 style="font-size:14px;margin:0 0 10px">上身</h3>
+        <div class="grid three">
+          <div class="field"><label>顏色</label><input id="topColor" value="淺藍色"></div>
+          <div class="field"><label>版型</label><input id="topFit" value="微貼身"></div>
+          <div class="field"><label>類型</label><input id="topType" value="長袖嫘縈上衣"></div>
+          <div class="field"><label>衣長</label><input id="topLength" value="正常衣長"></div>
+          <div class="field"><label>腹部覆蓋</label><input id="topCoverage" value="完整覆蓋腹部"></div>
+          <div class="field"><label>領子</label><input id="topCollar" value="斜向開岔細節"></div>
+          <div class="field"><label>袖子</label><input id="topSleeve" value="普通長袖"></div>
+          <div class="field"><label>袖口</label><input id="topCuff" value="袖口完整封閉、袖口位於手腕、不延伸覆蓋手掌"></div>
+          <div class="field"><label>材質</label><input id="topMaterial" value="嫘縈"></div>
+          <div class="field"><label>Logo／標誌位置</label><input id="topLogo" placeholder="例如：左胸、衣襬中央、無可見標誌"></div>
+          <div class="field full"><label>總體細節</label><textarea id="topOverall" placeholder="自行輸入上身整體細節"></textarea></div>
+        </div>
+        <hr>
+        <h3 style="font-size:14px;margin:0 0 10px">下身</h3>
+        <div class="grid three">
+          <div class="field"><label>顏色</label><input id="bottomColor" value="白色"></div>
+          <div class="field"><label>褲子類型</label><input id="bottomType" value="彎刀褲"></div>
+          <div class="field"><label>腰型</label><select id="bottomRise"><option>高腰</option><option>中高腰</option><option selected>中腰</option><option>中低腰</option><option>低腰</option></select></div>
+          <div class="field"><label>寬鬆程度</label><input id="bottomFit" value="寬鬆"></div>
+          <div class="field"><label>褲管</label><input id="bottomLeg" value="寬褲管"></div>
+          <div class="field"><label>褲長</label><input id="bottomLength" value="覆蓋至鞋子"></div>
+          <div class="field"><label>材質</label><input id="bottomMaterial" value="牛仔材質"></div>
+          <div class="field"><label>開岔／細節</label><input id="bottomDetail" placeholder="例如：褲腳無開岔"></div>
+          <div class="field full"><label>總體細節</label><textarea id="bottomOverall" placeholder="自行輸入下身整體細節"></textarea></div>
+        </div>
+        <hr>
+        <h3 style="font-size:14px;margin:0 0 10px">外搭／外套</h3>
+        <div class="grid">
+          <div class="field"><label>名稱</label><input id="outerName" placeholder="例如：短版西裝外套"></div>
+          <div class="field"><label>顏色</label><input id="outerColor" placeholder="例如：灰色"></div>
+          <div class="field"><label>材質</label><input id="outerMaterial" placeholder="例如：羊毛混紡"></div>
+          <div class="field"><label>細節</label><input id="outerDetail" placeholder="例如：雙排扣、正常肩線"></div>
+        </div>
+        <hr>
+        <h3 style="font-size:14px;margin:0 0 10px">鞋子與襪子</h3>
+        <div class="grid three">
+          <div class="field"><label>鞋子類型／名字</label><input id="shoeType" placeholder="例如：復古運動鞋"></div>
+          <div class="field"><label>鞋子顏色</label><input id="shoeColor" placeholder="例如：米白色"></div>
+          <div class="field"><label>鞋子材質</label><input id="shoeMaterial" placeholder="例如：皮革與網布"></div>
+          <div class="field full"><label>鞋子細節</label><input id="shoeDetail" placeholder="例如：低筒、平底、細緻縫線"></div>
+          <div class="field"><label>襪子顏色</label><input id="sockColor" placeholder="例如：白色"></div>
+          <div class="field"><label>襪子材質</label><input id="sockMaterial" placeholder="例如：棉質"></div>
+          <div class="field"><label>襪子細節</label><input id="sockDetail" placeholder="例如：短襪、自然貼合腳踝"></div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">04</div><h2>配件</h2></div><p class="section-note">勾選後會出現對應的名稱、顏色、材質與細節欄位。</p></div></div>
+        <div class="chip-row" id="accessoryChecks"></div>
+        <div id="accessoryPanels"></div>
+        <div class="field" style="margin-top:10px"><label>配件總體細節</label><textarea id="accessoryOverall" placeholder="例如：配件數量克制、整體風格一致"></textarea></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">05</div><h2>場景</h2></div></div></div>
+        <div id="sceneList" class="toggle-list"></div>
+        <div class="add-row scene-add-row"><input id="sceneInput" placeholder="新增場景，例如：極簡白色攝影棚、城市街道、咖啡廳"></input><button class="btn" id="addScene">新增場景</button></div>
+      </section>
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">06</div><h2>動作與攝影機</h2></div><p class="section-note">動作、人物角度與攝影機位置分開管理。三者都有獨立的新增欄位與刪除功能。</p></div></div>
+        <h3 style="font-size:14px;margin:0 0 9px">動作</h3>
+        <div class="field"><label>動作選擇</label><select id="actionSelect"></select></div>
+        <div id="actionList" style="margin-top:9px"></div>
+        <div class="action-add-fields">
+          <div class="field action-name-field"><label>動作名稱</label><input id="actionName" placeholder="例如：自然站姿"></div>
+          <div class="field action-desc-field"><label>動作描述</label><textarea id="actionDesc" placeholder="例如：自然頂胯、雙腳微微呈八字站立、雙手撐腰"></textarea></div>
+        </div>
+        <button class="btn" id="addAction" style="margin-top:8px">新增動作</button>
+        <hr>
+        <div class="grid">
+          <div class="field"><label>人物角度</label><select id="personAngle"></select></div>
+          <div class="field"><label>攝影機位置</label><select id="cameraPosition"></select></div>
+        </div>
+        <div class="independent-add-grid">
+          <div class="add-panel">
+            <label>新增人物角度</label>
+            <div class="add-row"><input id="angleCustomInput" placeholder="例如：背面三分之二全身"><button class="btn" id="addAngleOption">新增</button></div>
+            <div id="angleCustomList" style="margin-top:8px"></div>
+          </div>
+          <div class="add-panel">
+            <label>新增攝影機位置</label>
+            <div class="add-row"><input id="cameraCustomInput" placeholder="例如：地面高度低機位"><button class="btn" id="addCameraOption">新增</button></div>
+            <div id="cameraCustomList" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">07</div><h2>構圖</h2></div><p class="section-note">固定構圖條件會一直保留。使用者新增的構圖會變成開關，可複選，並且會儲存在電腦瀏覽器中。</p></div></div>
+        <div class="core-item"><span class="tag">固定</span>人物不要過度佔滿畫面、模特兒頭部上方必須保留充足、乾淨的空間，方便後續裁切、禁止裁切頭部、頭髮、雙手、腿部或鞋子</div>
+        <div id="compositionExtras" class="toggle-list" style="margin-top:10px"></div>
+        <div class="add-row"><input id="compositionInput" placeholder="新增構圖，例如：人物位於畫面中央、左右保留均衡空間"></input><button class="btn" id="addComposition">新增構圖</button></div>
+      </section>
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">08</div><h2>皮膚真實感</h2></div><p class="section-note">最高優先級。只有勾選後，完整皮膚強制提示才會加入右側預覽。</p></div></div>
+        <div class="toggle-row">
+          <div><strong style="font-size:13px">強制真實人類皮膚</strong><div class="helper">勾選後才會顯示在右側 Prompt。</div></div>
+          <label class="switch"><input type="checkbox" id="skinEnabled"><span class="slider"></span></label>
+        </div>
+        <div id="skinPreviewText" class="hidden" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head"><div><div class="section-title"><div class="badge">09</div><h2>自訂核心提示詞</h2></div><p class="section-note">新版固定核心提示詞會一直保留。使用者只能新增或刪除自訂項目。</p></div></div>
+        <div id="coreCustomList"></div>
+        <div class="add-row"><input id="coreCustomInput" placeholder="新增一致性、人物或整體呈現補充"></input><button class="btn" id="addCoreCustom">新增</button></div>
+      </section>
+    </main>
+
+    <aside class="right">
+      <section class="card prompt-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title"><div class="badge">P</div><h2>提示詞編譯器</h2></div>
+            <p class="section-note">固定規則會自動編譯。右側內容會即時更新。</p>
+          </div>
+        </div>
+        <div id="compileStatus" class="status ok">目前沒有偵測到明顯衝突。系統以參考圖一致性、人物身分、服裝準確度與固定構圖條件為優先。</div>
+        <div style="font-size:12px;font-weight:750">目前編譯模組</div>
+        <div class="module-line" id="modulePills"></div>
+        <div class="preview-wrap" style="margin-top:12px">
+          <textarea id="promptPreview" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="copy-row">
+          <button class="btn primary" id="copyBtn2">複製完整 Prompt</button>
+          <button class="btn" id="downloadBtn">下載 TXT</button>
+        </div>
+        <div class="field" style="margin-top:12px"><label>自訂備註</label><textarea id="customNote" placeholder="可加入你自己的生成備註。備註會放在 Prompt 最後。"></textarea></div>
+        <div class="notice">本工具只負責整理與編譯文字 Prompt，不會直接產生影像，也不會把參考圖片送到任何 API。</div>
+      </section>
+    </aside>
+  </div>
+  <footer class="signature">E@SON</footer>
+</div>
+
+<script>
+'use strict';
+// 05 場景設定：預設選項與使用者新增項目皆儲存於本機瀏覽器，不在介面顯示儲存機制說明。
+const KEY = 'fashion_prompt_lab_v5_state';
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+
+const fixed = {
+  consistency: '以提供的參考圖作為主要視覺依據，必須維持同一位女性模特兒的人物身分、臉部特徵、五官比例、臉型、身材比例、髮型與整體外觀，禁止重新設計、改變、美化、理想化或重新詮釋臉部，模特兒必須維持與參考圖高度一致，並且能被明確辨識為同一個人，服裝必須準確呈現指定內容，尤其是服裝輪廓、比例、長度、結構、材質與細節，禁止自行加入未指定的元素',
+  personPost: '維持參考圖中的自然髮色、髮型與身材比例',
+  expression: ['表情自然、放鬆、眼神自然','臉部肌肉保持放鬆','呈現細微自然的表情變化'],
+  expressionAvoid: '避免僵硬表情、誇張表情、刻意擺拍、過度完美的五官與人工生成的模特兒感',
+  composition: '人物不要過度佔滿畫面、模特兒頭部上方必須保留充足、乾淨的空間，方便後續裁切、禁止裁切頭部、頭髮、雙手、腿部或鞋子',
+  imaging: '真實攝影成像、自然光學成像、真實鏡頭透視、自然景深、真實布料與材質紋理、自然光線與真實光影衰減、細微自然膠片顆粒、避免過度銳化、HDR效果與過度後製',
+  overall: '最終影像必須呈現如同專業攝影師實際拍攝的真實時尚照片，優先維持人物臉部身分、皮膚真實感、服裝準確度、自然攝影成像與充足的頭部上方留白',
+  skin: [
+    '最高優先級、強制維持真實人類皮膚。此條件優先於所有美化、時尚攝影、商業攝影、畫質提升、人物修飾與臉部精緻化效果',
+    '皮膚必須呈現真實人類皮膚結構、真實皮膚質感、細微毛孔、皮膚微觀紋理、自然膚色變化、細微自然瑕疵、自然皮膚光澤、真實光線反射與自然皮膚層次',
+    '禁止人工美化皮膚、塑料感皮膚、蠟像感皮膚、陶瓷感皮膚、假皮膚、過度平滑皮膚、過度修飾、磨皮、美顏濾鏡、空氣刷、消除自然皮膚紋理、抹除毛孔、抹除皮膚細節、CGI皮膚、3D渲染皮膚與人工生成的皮膚外觀',
+    '即使整體影像需要呈現高品質、精緻、時尚、商業攝影或電影感，皮膚仍必須保持真實人類皮膚質感',
+    '「真實人類皮膚」、「自然皮膚紋理」、「真實毛孔」、「自然皮膚瑕疵」為不可降低、不可覆蓋、不可忽略、不可違反的強制條件'
+  ]
+};
+
+const sceneDefaults = ['參考圖','無影子純白色無縫棚拍背景','柔光高對比商業棚拍','時尚雜誌','電商商品照','庭院','低飽和灰色背景牆'];
+const accessoryDefs = ['帽子','墨鏡','眼鏡','項鍊','手鍊','戒指','手錶','其他'];
+const angleDefaults = ['正面全身','正面半身（模特腰部以上）','正面半身Ⅱ（模特膝蓋以上）','三分之四全身','三分之四半身（模特腰部以上）','三分之四半身Ⅱ（模特膝蓋以上）','側面全身','側面半身（模特腰部以上）','側面半身Ⅱ（模特膝蓋以上）','背面全身','背面半身（模特腰部以上）','背面半身Ⅱ（模特膝蓋以上）'];
+const cameraDefaults = ['平視','微高角度','高角度','微低角度','低角度'];
+const defaultActions = [{name:'生活感',desc:'自然頂胯、雙腳微微呈八字站立、雙手撐腰'}];
+
+let state = {
+  gender:'女性', hairstyle:'長髮',
+  expressions:[], scenes:sceneDefaults.map((text,i)=>({text,enabled:i===0,custom:false})),
+  compositionExtras:[], coreCustom:[],
+  actions:[...defaultActions], actionIndex:0,
+  angleCustom:[], cameraCustom:[],
+  accessories:[], accessoryData:{},
+  skinEnabled:false, customNote:'',
+  selectedAngle:angleDefaults[0], selectedCamera:cameraDefaults[0]
+};
+
+function cleanText(v){ return String(v ?? '').replace(/[。.!！?？；;]+$/g,'').trim(); }
+function joinPhrases(values){ return values.map(cleanText).filter(Boolean).join('、'); }
+function val(id){ return qs('#'+id)?.value || ''; }
+function setVal(id,v){ if(qs('#'+id)) qs('#'+id).value = v ?? ''; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderExpressions(){
+  const wrap=qs('#expressionList'); wrap.innerHTML='';
+  fixed.expression.forEach(t=>wrap.insertAdjacentHTML('beforeend',`<div class="core-item"><span class="tag">固定</span>${esc(t)}</div>`));
+  wrap.insertAdjacentHTML('beforeend',`<div class="core-item"><span class="tag">固定</span>${esc(fixed.expressionAvoid)}</div>`);
+  state.expressions.forEach((t,i)=>wrap.insertAdjacentHTML('beforeend',`<div class="core-item custom"><span class="tag">自訂</span>${esc(t)}<button class="icon-btn" data-del-expr="${i}" title="刪除">×</button></div>`));
+}
+
+function renderAccessories(){
+  qs('#accessoryChecks').innerHTML='';
+  accessoryDefs.forEach(name=>{
+    const checked=state.accessories.includes(name);
+    qs('#accessoryChecks').insertAdjacentHTML('beforeend',`<label class="chip"><input type="checkbox" data-acc="${esc(name)}" ${checked?'checked':''}>${esc(name)}</label>`);
+  });
+  const panel=qs('#accessoryPanels'); panel.innerHTML='';
+  state.accessories.forEach(name=>{
+    const d=state.accessoryData[name]||{name:name,color:'',material:'',detail:''};
+    panel.insertAdjacentHTML('beforeend',`<div class="accessory-panel">
+      <h3>${esc(name)}</h3>
+      <div class="small-grid">
+        <div class="field"><label>名稱</label><input data-acc-field="${esc(name)}" data-key="name" value="${esc(d.name)}"></div>
+        <div class="field"><label>顏色</label><input data-acc-field="${esc(name)}" data-key="color" value="${esc(d.color)}"></div>
+        <div class="field"><label>材質</label><input data-acc-field="${esc(name)}" data-key="material" value="${esc(d.material)}"></div>
+      </div>
+      <div class="field" style="margin-top:9px"><label>細節</label><input data-acc-field="${esc(name)}" data-key="detail" value="${esc(d.detail)}"></div>
+    </div>`);
+  });
+}
+
+function renderScenes(){
+  const w=qs('#sceneList'); w.innerHTML='';
+  state.scenes.forEach((scene,i)=>w.insertAdjacentHTML('beforeend',`<div class="toggle-item ${scene.custom?'custom':''}">
+    <div class="toggle-copy">${esc(scene.text)}${scene.custom?' <span class="tag">自訂</span>':''}</div>
+    <div class="toggle-actions">
+      ${scene.custom?`<button class="icon-btn" data-del-scene="${i}" title="刪除">×</button>`:''}
+      <label class="switch compact"><input type="checkbox" data-scene-index="${i}" ${scene.enabled?'checked':''}><span class="slider"></span></label>
+    </div>
+  </div>`));
+}
+
+function renderActions(){
+  const select=qs('#actionSelect');
+  select.innerHTML=state.actions.map((a,i)=>`<option value="${i}">${esc(a.name)}</option>`).join('');
+  if(state.actions.length) select.value=String(Math.min(state.actionIndex,state.actions.length-1));
+  const w=qs('#actionList'); w.innerHTML='';
+  state.actions.forEach((a,i)=>w.insertAdjacentHTML('beforeend',`<div class="action-item"><div class="action-main"><div><div class="action-name">${esc(a.name)} ${i===0?'<span class="tag">預設</span>':''}</div><div class="action-desc">${esc(a.desc)}</div></div><div class="action-actions">${i===0?'':`<button class="icon-btn" data-del-action="${i}" title="刪除">×</button>`}</div></div></div>`));
+}
+
+function fillSelect(id,items,selected){
+  const s=qs('#'+id); s.innerHTML=items.map(x=>`<option>${esc(x)}</option>`).join('');
+  if(selected && items.includes(selected)) s.value=selected;
+}
+function renderAngleCamera(){
+  const a=[...angleDefaults,...state.angleCustom];
+  const c=[...cameraDefaults,...state.cameraCustom];
+  if(!a.includes(state.selectedAngle)) state.selectedAngle=angleDefaults[0];
+  if(!c.includes(state.selectedCamera)) state.selectedCamera=cameraDefaults[0];
+  fillSelect('personAngle',a,state.selectedAngle);
+  fillSelect('cameraPosition',c,state.selectedCamera);
+  qs('#angleCustomList').innerHTML=state.angleCustom.map((x,i)=>`<div class="core-item custom"><span class="tag">自訂</span>${esc(x)}<button class="icon-btn" data-del-angle="${i}" title="刪除">×</button></div>`).join('');
+  qs('#cameraCustomList').innerHTML=state.cameraCustom.map((x,i)=>`<div class="core-item custom"><span class="tag">自訂</span>${esc(x)}<button class="icon-btn" data-del-camera="${i}" title="刪除">×</button></div>`).join('');
+}
+
+function renderComposition(){
+  qs('#compositionExtras').innerHTML=state.compositionExtras.map((item,i)=>`<div class="toggle-item custom">
+    <div class="toggle-copy"><span class="tag">自訂</span>${esc(item.text)}</div>
+    <div class="toggle-actions"><button class="icon-btn" data-del-comp="${i}" title="刪除">×</button>
+      <label class="switch compact"><input type="checkbox" data-comp-index="${i}" ${item.enabled?'checked':''}><span class="slider"></span></label>
+    </div>
+  </div>`).join('');
+}
+
+function renderCoreCustom(){ qs('#coreCustomList').innerHTML=state.coreCustom.map((x,i)=>`<div class="core-item custom"><span class="tag">自訂</span>${esc(x)}<button class="icon-btn" data-del-core="${i}" title="刪除">×</button></div>`).join(''); }
+function renderSkin(){
+  const w=qs('#skinPreviewText');
+  if(!state.skinEnabled){w.classList.add('hidden');w.innerHTML='';return;}
+  w.classList.remove('hidden');
+  w.innerHTML=fixed.skin.map(t=>`<div class="core-item"><span class="tag">強制</span>${esc(t)}</div>`).join('');
+}
+
+function clothingText(){
+  const top=`上身：${joinPhrases([val('topColor'),val('topFit'),val('topType'),val('topLength'),val('topCoverage')])}`;
+  const collar=`領子：${joinPhrases([val('topCollar')])}`;
+  const sleeve=`袖子：${joinPhrases([val('topSleeve'),val('topCuff')])}`;
+  const topMaterial=`材質：${joinPhrases([val('topMaterial')])}`;
+  const topLogo=`Logo／標誌位置：${joinPhrases([val('topLogo')])}`;
+  const topOverall=`總體細節：${joinPhrases([val('topOverall')])}`;
+  const bottom=`下身：${joinPhrases([val('bottomColor'),val('bottomType'),val('bottomRise'),val('bottomFit'),val('bottomLeg'),val('bottomLength'),val('bottomMaterial'),val('bottomDetail')])}`;
+  const bottomOverall=`下身總體細節：${joinPhrases([val('bottomOverall')])}`;
+  const outer=joinPhrases([val('outerName'),val('outerColor'),val('outerMaterial'),val('outerDetail')]);
+  const shoe=joinPhrases([val('shoeType'),val('shoeColor'),val('shoeMaterial'),val('shoeDetail')]);
+  const sock=joinPhrases([val('sockColor'),val('sockMaterial'),val('sockDetail')]);
+  const out=[];
+  if(top!=='上身：') out.push(top);
+  if(collar!=='領子：') out.push(collar);
+  if(sleeve!=='袖子：') out.push(sleeve);
+  if(topMaterial!=='材質：') out.push(topMaterial);
+  if(topLogo!=='Logo／標誌位置：') out.push(topLogo);
+  if(topOverall!=='總體細節：') out.push(topOverall);
+  if(bottom!=='下身：') out.push(bottom);
+  if(bottomOverall!=='下身總體細節：') out.push(bottomOverall);
+  if(outer) out.push('外搭/外套：'+outer);
+  if(shoe) out.push('鞋子：'+shoe);
+  if(sock) out.push('襪子：'+sock);
+  return out;
+}
+
+function accessoryText(){
+  if(!state.accessories.length) return '配件：無';
+  const items=state.accessories.map(n=>{const d=state.accessoryData[n]||{};return joinPhrases([d.name||n,d.color,d.material,d.detail]);}).filter(Boolean);
+  const overall=cleanText(val('accessoryOverall'));
+  return '配件：'+items.join('、')+(overall?'。配件總體細節：'+overall:'');
+}
+function selectedScene(){ return state.scenes.find(x=>x.enabled) || null; }
+
+function compile(){
+  state.gender=val('gender'); state.hairstyle=val('hairstyle');
+  state.actionIndex=Number(qs('#actionSelect')?.value || 0);
+  state.selectedAngle=val('personAngle')||state.selectedAngle;
+  state.selectedCamera=val('cameraPosition')||state.selectedCamera;
+  state.skinEnabled=qs('#skinEnabled').checked;
+  state.customNote=val('customNote');
+  const action=state.actions[state.actionIndex]||defaultActions[0];
+  const scene=selectedScene();
+  const lines=[];
+  lines.push('任務：生成一張以提供的參考圖為基礎的時尚模特兒影像');
+  lines.push('');
+  lines.push('【參考圖與一致性｜最高優先級】');
+  lines.push(fixed.consistency);
+  state.coreCustom.forEach(x=>lines.push('補充：'+cleanText(x)));
+  lines.push('');
+  lines.push('【人物】');
+  lines.push(`${state.gender}時尚模特兒`);
+  lines.push(`髮型：${cleanText(state.hairstyle)||'長髮'}`);
+  lines.push(fixed.personPost);
+  lines.push('');
+  lines.push('【表情】');
+  fixed.expression.forEach(x=>lines.push(x));
+  state.expressions.forEach(x=>lines.push(cleanText(x)));
+  lines.push(fixed.expressionAvoid);
+  lines.push('');
+  lines.push('【服裝】');
+  clothingText().forEach(x=>lines.push(x));
+  lines.push(accessoryText());
+  lines.push('');
+  lines.push('【場景】');
+  if(scene && scene.text === '參考圖'){
+    lines.push('使用提供的場景參考圖');
+    lines.push('準確遵循場景參考圖');
+    lines.push('禁止自行加入不必要或未指定的環境元素');
+  }else{
+    lines.push(scene ? `場景：${cleanText(scene.text)}` : '未指定場景');
+  }
+  lines.push('');
+  lines.push('【動作與攝影機】');
+  lines.push(`動作名稱：${cleanText(action.name)}`);
+  lines.push(`動作描述：${cleanText(action.desc)}`);
+  lines.push(`人物角度：${cleanText(state.selectedAngle)}`);
+  lines.push(`攝影機位置：${cleanText(state.selectedCamera)}`);
+  lines.push('');
+  lines.push('【構圖】');
+  lines.push(fixed.composition);
+  state.compositionExtras.filter(x=>x.enabled).forEach(x=>lines.push(cleanText(x.text)));
+  lines.push('');
+  if(state.skinEnabled){
+    lines.push('【皮膚真實感｜最高優先級｜強制執行】');
+    fixed.skin.forEach(x=>lines.push(x));
+    lines.push('');
+  }
+  lines.push('【成像】');
+  lines.push(fixed.imaging);
+  lines.push('');
+  lines.push('【整體呈現】');
+  lines.push(fixed.overall);
+  if(val('customNote').trim()){
+    lines.push(''); lines.push('【自訂備註】'); lines.push(cleanText(val('customNote')));
+  }
+  qs('#promptPreview').value=lines.join('\n');
+  const pills=['參考圖與一致性','人物','表情','服裝','場景','動作與攝影機','構圖','成像','整體呈現'];
+  if(state.skinEnabled)pills.push('皮膚真實感');
+  qs('#modulePills').innerHTML=pills.map(x=>`<span class="module-pill">${esc(x)}</span>`).join('');
+  const warnings=[];
+  if(state.accessories.includes('無') && state.accessories.length>1) warnings.push('配件同時選了「無」與其他項目。');
+  const status=qs('#compileStatus');
+  if(warnings.length){status.className='status warn';status.textContent='偵測到需要注意的設定：'+warnings.join('');}
+  else{status.className='status ok';status.textContent='目前沒有偵測到明顯衝突。系統以參考圖一致性、人物身分、服裝準確度與固定構圖條件為優先。';}
+  save(false);
+}
+
+function collectState(){
+  const data={...state,version:6,fields:{}};
+  qsa('input[id],select[id],textarea[id]').forEach(el=>{ if(el.id) data.fields[el.id]=el.type==='checkbox'?el.checked:el.value; });
+  return data;
+}
+function save(show=true){ localStorage.setItem(KEY,JSON.stringify(collectState())); if(show) alert('設定已儲存在本機瀏覽器。'); }
+function restore(){
+  try{
+    const raw=localStorage.getItem(KEY); if(!raw)return;
+    const d=JSON.parse(raw);
+    state={...state,...d};
+    if(Array.isArray(d.scenes) && d.scenes.length){
+      state.scenes=d.scenes.map((x,i)=>typeof x==='string'
+        ? {text:x,enabled:i===0,custom:true}
+        : {text:x.text,enabled:!!x.enabled,custom:!!x.custom});
+      if(!state.scenes.some(x=>x.text==='參考圖')){
+        state.scenes.unshift({text:'參考圖',enabled:false,custom:false});
+      }
+    }
+    if(!state.scenes.some(x=>x.text==='參考圖') && state.scenes.length){
+      state.scenes.unshift({text:'參考圖',enabled:false,custom:false});
+    }
+    if(!state.scenes.some(x=>x.enabled) && state.scenes.length) state.scenes[0].enabled=true;
+    state.compositionExtras=Array.isArray(d.compositionExtras)?d.compositionExtras.map(x=>typeof x==='string'?{text:x,enabled:true}:{text:x.text,enabled:!!x.enabled}):[];
+    state.angleCustom=Array.isArray(d.angleCustom)?d.angleCustom:[];
+    state.cameraCustom=Array.isArray(d.cameraCustom)?d.cameraCustom:[];
+    if(d.fields) Object.entries(d.fields).forEach(([k,v])=>{ const el=qs('#'+k); if(el){ if(el.type==='checkbox') el.checked=!!v; else setVal(k,v); }});
+  }catch(e){ console.warn('restore failed',e); }
+}
+
+function bind(){
+  qsa('input:not([type=file]),select,textarea').forEach(el=>el.addEventListener('input',()=>compile()));
+  qs('#skinEnabled').addEventListener('change',()=>{state.skinEnabled=qs('#skinEnabled').checked;renderSkin();compile();});
+  qs('#addExpression').addEventListener('click',()=>{const x=cleanText(val('expressionInput'));if(x){state.expressions.push(x);setVal('expressionInput','');renderExpressions();compile();}});
+  qs('#addScene').addEventListener('click',()=>{const x=cleanText(val('sceneInput'));if(x){state.scenes.forEach(s=>s.enabled=false);state.scenes.push({text:x,enabled:true,custom:true});setVal('sceneInput','');renderScenes();compile();}});
+  qs('#actionSelect').addEventListener('change',()=>{state.actionIndex=Number(qs('#actionSelect').value||0);compile();});
+  qs('#addAction').addEventListener('click',()=>{const n=cleanText(val('actionName')),d=cleanText(val('actionDesc'));if(n&&d){state.actions.push({name:n,desc:d});state.actionIndex=state.actions.length-1;setVal('actionName','');setVal('actionDesc','');renderActions();compile();}});
+  qs('#addAngleOption').addEventListener('click',()=>{const x=cleanText(val('angleCustomInput'));if(x&&!state.angleCustom.includes(x)){state.angleCustom.push(x);state.selectedAngle=x;setVal('angleCustomInput','');renderAngleCamera();qs('#personAngle').value=x;compile();}});
+  qs('#addCameraOption').addEventListener('click',()=>{const x=cleanText(val('cameraCustomInput'));if(x&&!state.cameraCustom.includes(x)){state.cameraCustom.push(x);state.selectedCamera=x;setVal('cameraCustomInput','');renderAngleCamera();qs('#cameraPosition').value=x;compile();}});
+  qs('#addComposition').addEventListener('click',()=>{const x=cleanText(val('compositionInput'));if(x){state.compositionExtras.push({text:x,enabled:true});setVal('compositionInput','');renderComposition();compile();}});
+  qs('#addCoreCustom').addEventListener('click',()=>{const x=cleanText(val('coreCustomInput'));if(x){state.coreCustom.push(x);setVal('coreCustomInput','');renderCoreCustom();compile();}});
+  qs('#saveBtn').addEventListener('click',()=>save(true));
+  qs('#resetBtn').addEventListener('click',()=>{if(confirm('確定要重設所有設定嗎？')){localStorage.removeItem(KEY);location.reload();}});
+  qs('#copyBtn2').addEventListener('click',copyPrompt);
+  qs('#downloadBtn').addEventListener('click',()=>{const blob=new Blob([qs('#promptPreview').value],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fashion_prompt.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);});
+  qs('#personAngle').addEventListener('change',()=>{state.selectedAngle=qs('#personAngle').value;compile();});
+  qs('#cameraPosition').addEventListener('change',()=>{state.selectedCamera=qs('#cameraPosition').value;compile();});
+  qs('#accessoryChecks').addEventListener('change',e=>{ const cb=e.target.closest('[data-acc]'); if(!cb)return; const n=cb.dataset.acc; if(cb.checked){if(!state.accessories.includes(n))state.accessories.push(n);if(!state.accessoryData[n])state.accessoryData[n]={name:n,color:'',material:'',detail:''};}else state.accessories=state.accessories.filter(x=>x!==n); renderAccessories(); compile(); });
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('button');
+    if(b){
+      if(b.dataset.delExpr!==undefined){state.expressions.splice(+b.dataset.delExpr,1);renderExpressions();compile();}
+      if(b.dataset.delScene!==undefined){state.scenes.splice(+b.dataset.delScene,1);if(!state.scenes.some(x=>x.enabled)&&state.scenes.length)state.scenes[0].enabled=true;renderScenes();compile();}
+      if(b.dataset.delAction!==undefined){const idx=+b.dataset.delAction;state.actions.splice(idx,1);if(state.actionIndex>=state.actions.length)state.actionIndex=Math.max(0,state.actions.length-1);renderActions();compile();}
+      if(b.dataset.delAngle!==undefined){state.angleCustom.splice(+b.dataset.delAngle,1);if(!angleDefaults.includes(state.selectedAngle)&&!state.angleCustom.includes(state.selectedAngle))state.selectedAngle=angleDefaults[0];renderAngleCamera();compile();}
+      if(b.dataset.delCamera!==undefined){state.cameraCustom.splice(+b.dataset.delCamera,1);if(!cameraDefaults.includes(state.selectedCamera)&&!state.cameraCustom.includes(state.selectedCamera))state.selectedCamera=cameraDefaults[0];renderAngleCamera();compile();}
+      if(b.dataset.delComp!==undefined){state.compositionExtras.splice(+b.dataset.delComp,1);renderComposition();compile();}
+      if(b.dataset.delCore!==undefined){state.coreCustom.splice(+b.dataset.delCore,1);renderCoreCustom();compile();}
+    }
+    const sceneCb=e.target.closest('[data-scene-index]');
+    if(sceneCb){
+      const idx=+sceneCb.dataset.sceneIndex;
+      state.scenes.forEach((s,i)=>s.enabled=i===idx);
+      renderScenes();compile();
+    }
+    const compCb=e.target.closest('[data-comp-index]');
+    if(compCb){const idx=+compCb.dataset.compIndex;state.compositionExtras[idx].enabled=compCb.checked;compile();}
+  });
+  document.addEventListener('input',e=>{ if(e.target.matches('[data-acc-field]')){const n=e.target.dataset.accField,k=e.target.dataset.key;state.accessoryData[n]=state.accessoryData[n]||{};state.accessoryData[n][k]=e.target.value;compile();} });
+}
+
+async function copyPrompt(){
+  const text=qs('#promptPreview').value;
+  try{await navigator.clipboard.writeText(text);alert('Prompt 已複製。');}
+  catch(e){qs('#promptPreview').select();document.execCommand('copy');alert('Prompt 已複製。');}
+}
+function init(){
+  restore();
+  qs('#gender').value=state.gender; qs('#hairstyle').value=state.hairstyle; qs('#skinEnabled').checked=state.skinEnabled;
+  renderExpressions();renderAccessories();renderScenes();renderActions();renderAngleCamera();renderComposition();renderCoreCustom();renderSkin();
+  bind(); compile();
+}
+init();
+</script>
+</body>
+</html>
